@@ -432,6 +432,10 @@ describe('Desi Dutch Backend Test Suite', () => {
       assert.strictEqual(getRes.status, 200);
       const getJson = await getRes.json();
       assert.strictEqual(getJson.name, 'Gouda Samosa Chaat');
+
+      // Clean up created test dish
+      const delReq = new NextRequest(`http://localhost:3000/api/dishes/${json.dish_id}`);
+      await deleteDishHandler(delReq, { params: Promise.resolve({ id: json.dish_id }) });
     });
 
     it('POST /api/dishes returns 400 for validation errors', async () => {
@@ -511,6 +515,10 @@ describe('Desi Dutch Backend Test Suite', () => {
       assert.strictEqual(json.success, true);
       assert.strictEqual(json.price, 19.50);
       assert.strictEqual(json.daily_special, true);
+
+      // Clean up temporary dish
+      const delReq = new NextRequest(`http://localhost:3000/api/dishes/${tempDishId}`);
+      await deleteDishHandler(delReq, { params: Promise.resolve({ id: tempDishId }) });
     });
 
     it('DELETE /api/dishes/[id] removes dish and subsequent GET returns 404', async () => {

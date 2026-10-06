@@ -419,6 +419,21 @@ async function run() {
       await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'desktop-home.png'), fullPage: false });
     });
 
+    // ------------------------------------------------------------------------
+    // FLOW 4: Cleanup: Delete test dish to ensure database stays clean
+    // ------------------------------------------------------------------------
+    await recordStep('Cleanup: Delete created test dish from Admin to keep database pristine', async () => {
+      await page.goto(`${BASE_URL}/admin`, { waitUntil: 'networkidle' });
+      const row = page.locator(`tr:has-text("${editedDishName}")`).first();
+      if (await row.isVisible()) {
+        const deleteBtn = row.locator('button[title="Delete Dish"]');
+        await deleteBtn.click();
+        const confirmBtn = page.locator('div[role="dialog"]').locator('button:has-text("Delete Dish")');
+        await confirmBtn.click();
+        await page.waitForSelector(`text=${editedDishName}`, { state: 'detached', timeout: 5000 });
+      }
+    });
+
   } finally {
     await browser.close();
   }
