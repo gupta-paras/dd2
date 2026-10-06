@@ -1,15 +1,14 @@
 @import "tailwindcss";
 
 :root {
-  --background: #FAF9F6;
-  --foreground: #1C1917;
+  --background: #FAF8F5;
+  --foreground: #1A1917;
   --surface: #FFFFFF;
-  --surface-alt: #F5F3EF;
-  --saffron: #D97706;
-  --saffron-light: #FEF3C7;
-  --terracotta: #EA580C;
-  --terracotta-light: #FFEDD5;
-  --warm-border: #E7E5E4;
+  --surface-alt: #F4F1EB;
+  --brass: #C07C27;
+  --brass-muted: #E29D38;
+  --delft: #1D3557;
+  --stone-line: #E8E4DC;
 }
 
 @theme inline {
@@ -17,48 +16,56 @@
   --color-foreground: var(--foreground);
   --color-surface: var(--surface);
   --color-surface-alt: var(--surface-alt);
-  --color-saffron: var(--saffron);
-  --color-terracotta: var(--terracotta);
-  --color-warm-border: var(--warm-border);
+  --color-brass: var(--brass);
+  --color-delft: var(--delft);
+  --color-stone-line: var(--stone-line);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 body {
-  background-color: #FAF9F6;
-  color: #1C1917;
+  background-color: #FAF8F5;
+  color: #1A1917;
   font-family: var(--font-sans), system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
 }
 
-/* Custom delicate scrollbars */
+/* Custom editorial scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #F5F3EF;
+  background: #F4F1EB;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D6D3D1;
+  background: #D8D4CA;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #A8A29E;
+  background: #B8B3A8;
 }
 
-/* Glassmorphism utility */
+/* Subtle Indian/Dutch cultural watermark and hairline accents */
+.pattern-heritage {
+  background-image: radial-gradient(circle at 1px 1px, #E5E0D5 1px, transparent 0);
+  background-size: 24px 24px;
+}
+
+/* Glassmorphism utility with warm matte finish */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(231, 229, 228, 0.8);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(232, 228, 220, 0.9);
 }
 
 .glass-badge {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(232, 228, 220, 0.7);
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04);
 }

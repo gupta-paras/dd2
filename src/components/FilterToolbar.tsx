@@ -75,7 +75,7 @@ export function FilterToolbar({
               'Search dishes (e.g. Butter chicken, Biryani, Dosa)...',
               'Zoek gerechten (bijv. Butter chicken, Biryani, Dosa)...'
             )}
-            className="w-full pl-10 pr-9 py-2.5 rounded-full bg-white border border-stone-200 text-stone-900 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 shadow-2xs transition-all"
+            className="w-full pl-10 pr-9 py-2.5 rounded-full bg-[#FAF8F5]/80 border border-stone-200 text-stone-900 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-1 focus:ring-stone-900 focus:border-stone-900 shadow-2xs transition-all"
           />
           {search && (
             <button
@@ -89,18 +89,18 @@ export function FilterToolbar({
         </div>
 
         {/* Toggles and Reset */}
-        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {/* Daily Specials Toggle */}
           <button
             type="button"
             onClick={() => onDailySpecialChange(!dailySpecialOnly)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border select-none ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border select-none ${
               dailySpecialOnly
-                ? 'bg-amber-500 text-white border-amber-600 shadow-xs'
-                : 'bg-white text-stone-700 border-stone-200 hover:border-amber-300 hover:bg-amber-50/50'
+                ? 'bg-[#1A1917] text-white border-[#1A1917] shadow-2xs'
+                : 'bg-white text-stone-700 border-stone-200/90 hover:border-stone-400 hover:bg-[#FAF8F5]'
             }`}
           >
-            <Sparkles className={`w-3.5 h-3.5 ${dailySpecialOnly ? 'text-white' : 'text-amber-500'}`} />
+            <Sparkles className={`w-3.5 h-3.5 ${dailySpecialOnly ? 'text-[#C07C27]' : 'text-[#C07C27]'}`} />
             <span>{t('Daily Specials Only', 'Favorieten uit de keuken')}</span>
           </button>
 
@@ -108,13 +108,13 @@ export function FilterToolbar({
           <button
             type="button"
             onClick={() => onInStockChange(!inStockOnly)}
-            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border select-none ${
+            className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border select-none ${
               inStockOnly
-                ? 'bg-emerald-600 text-white border-emerald-700 shadow-xs'
-                : 'bg-white text-stone-700 border-stone-200 hover:border-emerald-300 hover:bg-emerald-50/50'
+                ? 'bg-[#1D3557] text-white border-[#1D3557] shadow-2xs'
+                : 'bg-white text-stone-700 border-stone-200/90 hover:border-stone-400 hover:bg-[#FAF8F5]'
             }`}
           >
-            <CheckCircle2 className={`w-3.5 h-3.5 ${inStockOnly ? 'text-white' : 'text-emerald-600'}`} />
+            <CheckCircle2 className={`w-3.5 h-3.5 ${inStockOnly ? 'text-white' : 'text-emerald-700'}`} />
             <span>{t('In Stock Only', 'Op voorraad')}</span>
           </button>
 
@@ -123,13 +123,13 @@ export function FilterToolbar({
             <button
               type="button"
               onClick={() => onComingSoonChange(!comingSoonOnly)}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border select-none ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer border select-none ${
                 comingSoonOnly
-                  ? 'bg-purple-600 text-white border-purple-700 shadow-xs'
-                  : 'bg-white text-stone-700 border-stone-200 hover:border-purple-300 hover:bg-purple-50/50'
+                  ? 'bg-stone-800 text-white border-stone-800 shadow-2xs'
+                  : 'bg-white text-stone-700 border-stone-200/90 hover:border-stone-400 hover:bg-[#FAF8F5]'
               }`}
             >
-              <Clock className={`w-3.5 h-3.5 ${comingSoonOnly ? 'text-white' : 'text-purple-600'}`} />
+              <Clock className={`w-3.5 h-3.5 ${comingSoonOnly ? 'text-white' : 'text-stone-500'}`} />
               <span>{t('Coming Soon', 'Binnenkort')}</span>
             </button>
           )}
@@ -139,7 +139,7 @@ export function FilterToolbar({
             <button
               type="button"
               onClick={onResetFilters}
-              className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 border border-stone-200 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 border border-stone-200/80 transition-all cursor-pointer"
               title={t('Reset all filters', 'Filters resetten')}
             >
               <RotateCcw className="w-3.5 h-3.5" />
@@ -166,8 +166,8 @@ export function FilterToolbar({
                 onClick={() => onTagChange(cat.id)}
                 className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer select-none ${
                   isActive
-                    ? 'bg-stone-900 text-white shadow-xs'
-                    : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300 hover:text-stone-900 hover:bg-stone-50'
+                    ? 'bg-[#1A1917] text-white shadow-2xs'
+                    : 'bg-white/80 text-stone-600 border border-[#EAE6DF] hover:border-stone-400 hover:text-stone-900 hover:bg-[#FAF8F5]'
                 }`}
               >
                 {label}

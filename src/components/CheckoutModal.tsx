@@ -154,7 +154,7 @@ export function CheckoutModal() {
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2.5 py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-extrabold text-base shadow-lg shadow-emerald-900/20 transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl bg-[#128C7E] hover:bg-[#075E54] active:scale-[0.99] text-white font-medium text-sm shadow-2xs transition-all cursor-pointer"
               >
                 <MessageCircle className="w-5 h-5 fill-white" />
                 <span>{t('Open & Send on WhatsApp', 'Open & Verstuur via WhatsApp')}</span>
@@ -310,7 +310,7 @@ export function CheckoutModal() {
             <div className="p-6 border-t border-stone-200 bg-white space-y-3">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-stone-600">{t('Total Due', 'Totaalbedrag')}</span>
-                <span className="text-xl font-black text-stone-900">
+                <span className="font-serif text-2xl font-medium text-stone-900">
                   €{totalAmount.toFixed(2)}
                 </span>
               </div>
@@ -318,7 +318,7 @@ export function CheckoutModal() {
               <button
                 type="submit"
                 disabled={isSubmitting || items.length === 0}
-                className="w-full flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 disabled:opacity-60 text-white font-extrabold text-sm shadow-md transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2.5 py-4 px-4 rounded-xl bg-[#1A1917] hover:bg-[#2C2A26] active:scale-[0.99] disabled:opacity-50 text-white font-medium text-sm shadow-2xs transition-all cursor-pointer border border-stone-800"
               >
                 {isSubmitting ? (
                   <div className="inline-flex items-center gap-2">

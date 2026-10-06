@@ -13,28 +13,30 @@ export function Footer() {
   const isNl = lang === 'nl';
 
   return (
-    <footer className="mt-auto bg-stone-900 text-stone-300 border-t border-stone-800">
+    <footer className="mt-auto bg-[#141413] text-stone-300 border-t border-stone-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand & Story */}
           <div className="md:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-600 to-orange-600 flex items-center justify-center text-white font-serif font-black text-lg">
-                DD
+              <div className="relative w-10 h-10 rounded-xl bg-[#1E1E1C] border border-[#C07C27]/40 flex items-center justify-center text-stone-100 font-serif font-medium text-lg shadow-inner">
+                <span className="tracking-tighter">DD</span>
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#1D3557] border border-[#141413]" title="Amsterdam Canal Heritage" />
+                <span className="absolute -bottom-1 -left-1 w-2.5 h-2.5 rounded-full bg-[#C07C27] border border-[#141413]" title="Delhi Spice Heritage" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-white leading-tight">
+                <h3 className="font-serif text-lg font-medium text-white leading-tight">
                   {config.restaurant.name}
                 </h3>
-                <p className="text-xs text-stone-400">
+                <p className="text-[11px] uppercase tracking-widest text-stone-400">
                   {isNl ? config.restaurant.cuisine_label_nl : config.restaurant.cuisine_label}
                 </p>
               </div>
             </div>
-            <p className="text-xs text-amber-400 font-medium">
+            <p className="text-xs font-serif italic text-[#D89E4B]">
               {isNl ? config.restaurant.tagline_nl : config.restaurant.tagline}
             </p>
-            <p className="text-sm text-stone-400 max-w-sm leading-relaxed">
+            <p className="text-xs text-stone-400 max-w-sm leading-relaxed">
               {t(
                 'Desi Dutch serves authentic Indian home cooking, prepared with passion and soul. Fresh ingredients, comforting spices, and pure hospitality.',
                 'Desi Dutch serveert authentieke Indiase thuisgerechten, met passie en toewijding bereid. Verse ingrediënten, verwarmende specerijen en oprechte gastvrijheid.'

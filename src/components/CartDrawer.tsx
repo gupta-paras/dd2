@@ -227,16 +227,16 @@ export function CartDrawer() {
                   setIsCartOpen(false);
                   setIsCheckoutOpen(true);
                 }}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 active:scale-[0.99] text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 bg-[#1A1917] hover:bg-[#2C2A26] active:scale-[0.99] text-white font-medium py-3.5 px-4 rounded-xl shadow-2xs hover:shadow-xs transition-all cursor-pointer border border-stone-800"
               >
                 <span>{t('Proceed to Checkout', 'Bestelling afronden')}</span>
-                <span className="text-amber-200">•</span>
-                <span>€{totalAmount.toFixed(2)}</span>
+                <span className="text-stone-500">•</span>
+                <span className="font-serif">€{totalAmount.toFixed(2)}</span>
                 <ArrowRight className="w-4 h-4 ml-1" />
               </button>
 
               <p className="text-center text-[11px] text-stone-500 flex items-center justify-center gap-1.5">
-                <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                <MessageCircle className="w-3.5 h-3.5 text-emerald-700" />
                 <span>{t('Direct WhatsApp ordering to kitchen', 'Directe bestelling via WhatsApp naar de keuken')}</span>
               </p>
             </div>

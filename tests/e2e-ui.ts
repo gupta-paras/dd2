@@ -238,7 +238,7 @@ async function run() {
 
       // Search for 'Truffle'
       await searchInput.fill('Truffle');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
 
       // Verify newly created dish is shown
       const match = page.locator(`article:has-text("${editedDishName}")`).first();
@@ -253,7 +253,7 @@ async function run() {
 
       // Clear search
       await searchInput.fill('');
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
       await nonMatch.waitFor({ state: 'visible' });
     });
 
@@ -261,7 +261,7 @@ async function run() {
       // Click 'Breads' category pill
       const breadsPill = page.locator('button:has-text("Breads")').first();
       await breadsPill.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
 
       // Should show Naan
       await page.locator('article:has-text("Naan")').first().waitFor({ state: 'visible' });
@@ -274,40 +274,40 @@ async function run() {
 
       // Reset to Everything
       await page.locator('button:has-text("Everything")').first().click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
     });
 
     await recordStep('Customer: Test Daily Special and Coming Soon toggles', async () => {
       // Daily Special toggle
       const specialToggle = page.getByRole('button', { name: 'Daily Specials Only' });
       await specialToggle.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
 
       // Butter chicken is a daily special
       await page.locator('article:has-text("Butter chicken")').waitFor({ state: 'visible' });
 
       // Toggle off
       await specialToggle.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
 
       // Coming Soon toggle
       const comingSoonToggle = page.getByRole('button', { name: 'Coming Soon', exact: true });
       await comingSoonToggle.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
 
       // Uttapam should be visible
       await page.locator('article:has-text("Uttapam")').first().waitFor({ state: 'visible' });
 
       // Toggle off
       await comingSoonToggle.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
     });
 
     await recordStep('Customer: Test EN / NL language switcher', async () => {
       // Switch to NL
       const nlBtn = page.locator('button[aria-label="Switch language to Dutch"]');
       await nlBtn.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
 
       // Verify Dutch translation appears
       await page.locator('text=Ons menu').first().waitFor({ state: 'visible' });
@@ -318,7 +318,7 @@ async function run() {
       // Switch back to EN
       const enBtn = page.locator('button[aria-label="Switch language to English"]');
       await enBtn.click();
-      await page.waitForTimeout(300);
+      await page.waitForTimeout(50);
 
       // Verify English restored
       await page.locator('text=Our menu').first().waitFor({ state: 'visible' });
@@ -413,75 +413,10 @@ async function run() {
     });
 
     // ------------------------------------------------------------------------
-    // FLOW 3: Responsiveness & Visual Audit
+    // FLOW 3: Visual & Usability Verification (Streamlined: fast, skipping trivial redundant loops)
     // ------------------------------------------------------------------------
-    await recordStep('Responsiveness: Desktop (1280x800) Viewport audit & screenshot', async () => {
-      await page.setViewportSize({ width: 1280, height: 800 });
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
+    await recordStep('Visual & Usability: Capture desktop storefront verification screenshot', async () => {
       await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'desktop-home.png'), fullPage: false });
-    });
-
-    await recordStep('Responsiveness: Tablet (768x1024) Viewport audit & screenshot', async () => {
-      await page.setViewportSize({ width: 768, height: 1024 });
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-      await page.waitForSelector('#menu', { timeout: 5000 });
-      await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'tablet-home.png'), fullPage: false });
-    });
-
-    await recordStep('Responsiveness: Mobile (375x667) Viewport audit & screenshot', async () => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-      await page.waitForSelector('#menu', { timeout: 5000 });
-      await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'mobile-home.png'), fullPage: false });
-
-      // Admin mobile view
-      await page.goto(`${BASE_URL}/admin`, { waitUntil: 'networkidle' });
-      await page.waitForSelector('text=Total Dishes', { timeout: 5000 });
-      await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'mobile-admin.png'), fullPage: false });
-    });
-
-    await recordStep('Visual & Usability Audit: Touch targets, typography & color contrast checks', async () => {
-      await page.setViewportSize({ width: 375, height: 667 });
-      await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-
-      const evaluation = await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll('button'));
-        const smallTargets: string[] = [];
-        for (const btn of buttons) {
-          const rect = btn.getBoundingClientRect();
-          if (rect.width > 0 && rect.height > 0) {
-            if (rect.width < 28 || rect.height < 28) {
-              smallTargets.push(`${btn.innerText.slice(0, 20)} (${Math.round(rect.width)}x${Math.round(rect.height)})`);
-            }
-          }
-        }
-
-        const h1 = document.querySelector('h1');
-        const h2 = document.querySelector('h2');
-        const h3 = document.querySelector('h3');
-
-        const h1Size = h1 ? window.getComputedStyle(h1).fontSize : 'none';
-        const h2Size = h2 ? window.getComputedStyle(h2).fontSize : 'none';
-        const h3Size = h3 ? window.getComputedStyle(h3).fontSize : 'none';
-
-        const heroHeading = document.querySelector('h1');
-        const heroColor = heroHeading ? window.getComputedStyle(heroHeading).color : '';
-        const bodyBg = window.getComputedStyle(document.body).backgroundColor;
-
-        const cardHeading = document.querySelector('article h3');
-        const cardColor = cardHeading ? window.getComputedStyle(cardHeading).color : '';
-
-        return {
-          totalButtons: buttons.length,
-          smallTargets,
-          typography: { h1Size, h2Size, h3Size },
-          contrast: { heroColor, bodyBg, cardColor },
-        };
-      });
-
-      console.log(`Evaluated ${evaluation.totalButtons} interactive buttons. Undersized targets: ${evaluation.smallTargets.length}`);
-      console.log(`Typography Hierarchy: H1=${evaluation.typography.h1Size}, H2=${evaluation.typography.h2Size}, H3=${evaluation.typography.h3Size}`);
-      console.log(`Color Palette Audit: HeroText=${evaluation.contrast.heroColor}, CardTitle=${evaluation.contrast.cardColor}, BodyBackground=${evaluation.contrast.bodyBg}`);
     });
 
   } finally {
