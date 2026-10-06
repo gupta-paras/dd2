@@ -10,20 +10,24 @@ export function seedDatabase(db?: DatabaseSync, force = false): { count: number;
     database.exec('DELETE FROM dishes;');
     const insertStmt = database.prepare(`
       INSERT INTO dishes (
-        dish_id, name, description, photo_url, price, tags, daily_special, is_available, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        dish_id, name, name_nl, description, description_nl, photo_url, price, category, tags, daily_special, is_available, is_coming_soon, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     for (const dish of SEED_DISHES) {
       insertStmt.run(
         dish.dish_id,
         dish.name,
+        dish.name_nl || dish.name,
         dish.description,
+        dish.description_nl || dish.description,
         dish.photo_url,
         dish.price,
+        dish.category || 'Curries',
         JSON.stringify(dish.tags),
         dish.daily_special ? 1 : 0,
         dish.is_available ? 1 : 0,
+        dish.is_coming_soon ? 1 : 0,
         dish.created_at,
         dish.updated_at
       );

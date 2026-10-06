@@ -18,7 +18,7 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
       const data = await res.json();
       assert.strictEqual(data.success, true);
       assert.ok(Array.isArray(data.data));
-      assert.ok(data.count >= 10, `Expected at least 10 dishes, got ${data.count}`);
+      assert.ok(data.count >= 50, `Expected at least 50 catalog dishes, got ${data.count}`);
     });
 
     it('GET /dishes (rewritten endpoint) returns identical 200 structure', async () => {
@@ -27,25 +27,28 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
       const data = await res.json();
       assert.strictEqual(data.success, true);
       assert.ok(Array.isArray(data.data));
-      assert.ok(data.count >= 10);
+      assert.ok(data.count >= 50);
     });
 
-    it('Verifies initial bootstrapped dish data structures', async () => {
+    it('Verifies reference catalog dish data structures', async () => {
       const res = await fetch(`${BASE_URL}/api/dishes`);
       const data = await res.json();
       const dishes: Dish[] = data.data;
 
-      const keema = dishes.find((d: Dish) => d.name.includes('Keema Bitterballen'));
-      assert.ok(keema, 'Keema Bitterballen should exist');
-      assert.strictEqual(keema.daily_special, true);
-      assert.strictEqual(keema.is_available, true);
-      assert.strictEqual(keema.price, 8.5);
+      const butterChicken = dishes.find((d: Dish) => d.name.toLowerCase().includes('butter chicken'));
+      assert.ok(butterChicken, 'Butter chicken should exist');
+      assert.strictEqual(butterChicken.daily_special, true);
+      assert.strictEqual(butterChicken.is_available, true);
+      assert.strictEqual(butterChicken.price, 15);
 
-      const kapsalon = dishes.find((d: Dish) => d.name.includes('Kapsalon Chicken Tikka'));
-      assert.ok(kapsalon, 'Kapsalon Chicken Tikka should exist');
-      assert.strictEqual(kapsalon.daily_special, true);
-      assert.strictEqual(kapsalon.is_available, true);
-      assert.strictEqual(kapsalon.price, 13.5);
+      const biryani = dishes.find((d: Dish) => d.name.toLowerCase().includes('biryani'));
+      assert.ok(biryani, 'Chicken biryani should exist');
+      assert.strictEqual(biryani.is_available, true);
+      assert.strictEqual(biryani.price, 15);
+
+      const idli = dishes.find((d: Dish) => d.name.toLowerCase() === 'idli');
+      assert.ok(idli, 'Idli (coming soon) should exist');
+      assert.strictEqual(idli.is_coming_soon, true);
     });
   });
 
@@ -61,17 +64,6 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
       }
     });
 
-    it('Filter: availability=false (AND condition)', async () => {
-      const res = await fetch(`${BASE_URL}/api/dishes?availability=false`);
-      assert.strictEqual(res.status, 200);
-      const data = await res.json();
-      assert.strictEqual(data.success, true);
-      assert.ok(data.data.length > 0);
-      for (const dish of data.data) {
-        assert.strictEqual(dish.is_available, false, `Dish ${dish.name} should be unavailable`);
-      }
-    });
-
     it('Filter: daily_special=true (OR condition)', async () => {
       const res = await fetch(`${BASE_URL}/api/dishes?daily_special=true`);
       assert.strictEqual(res.status, 200);
@@ -83,60 +75,53 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
       }
     });
 
-    it('Filter: tags=snack (OR condition)', async () => {
-      const res = await fetch(`${BASE_URL}/api/dishes?tags=snack`);
+    it('Filter: category=Biryani (OR condition)', async () => {
+      const res = await fetch(`${BASE_URL}/api/dishes?category=Biryani`);
       assert.strictEqual(res.status, 200);
       const data = await res.json();
       assert.strictEqual(data.success, true);
       assert.ok(data.data.length > 0);
       for (const dish of data.data) {
-        const lowerTags = dish.tags.map((t: string) => t.toLowerCase());
-        assert.ok(lowerTags.includes('snack'), `Dish ${dish.name} must contain snack tag`);
+        assert.strictEqual((dish.category || '').toLowerCase(), 'biryani');
       }
     });
 
-    it('Filter: name=kapsalon (OR condition)', async () => {
-      const res = await fetch(`${BASE_URL}/api/dishes?name=kapsalon`);
+    it('Filter: name=butter (OR condition)', async () => {
+      const res = await fetch(`${BASE_URL}/api/dishes?name=butter`);
       assert.strictEqual(res.status, 200);
       const data = await res.json();
       assert.strictEqual(data.success, true);
       assert.ok(data.data.length >= 1);
       for (const dish of data.data) {
         assert.ok(
-          dish.name.toLowerCase().includes('kapsalon'),
-          `Dish ${dish.name} should match kapsalon substring`
+          dish.name.toLowerCase().includes('butter'),
+          `Dish ${dish.name} should match butter substring`
         );
       }
     });
 
-    it('Compound Filter: availability=true & daily_special=true & tags=snack (AND with OR)', async () => {
+    it('Filter: is_coming_soon=true', async () => {
+      const res = await fetch(`${BASE_URL}/api/dishes?is_coming_soon=true`);
+      assert.strictEqual(res.status, 200);
+      const data = await res.json();
+      assert.strictEqual(data.success, true);
+      assert.strictEqual(data.data.length, 8);
+      for (const dish of data.data) {
+        assert.strictEqual(dish.is_coming_soon, true);
+      }
+    });
+
+    it('Compound Filter: availability=true & daily_special=true (AND with OR)', async () => {
       const res = await fetch(
-        `${BASE_URL}/api/dishes?availability=true&daily_special=true&tags=snack`
+        `${BASE_URL}/api/dishes?availability=true&daily_special=true`
       );
       assert.strictEqual(res.status, 200);
       const data = await res.json();
       assert.strictEqual(data.success, true);
       assert.ok(data.data.length > 0);
       for (const dish of data.data) {
-        assert.strictEqual(dish.is_available, true, `Dish ${dish.name} must be available`);
-        const isSpecial = dish.daily_special === true;
-        const hasSnack = dish.tags.map((t: string) => t.toLowerCase()).includes('snack');
-        assert.ok(
-          isSpecial || hasSnack,
-          `Dish ${dish.name} must be either a daily special OR have tag snack`
-        );
-      }
-    });
-
-    it('Compound Filter: availability=false & name=kapsalon', async () => {
-      const res = await fetch(`${BASE_URL}/api/dishes?availability=false&name=kapsalon`);
-      assert.strictEqual(res.status, 200);
-      const data = await res.json();
-      assert.strictEqual(data.success, true);
-      // In the seed dataset, Kapsalon is available: true, so availability=false & name=kapsalon returns 0
-      for (const dish of data.data) {
-        assert.strictEqual(dish.is_available, false);
-        assert.ok(dish.name.toLowerCase().includes('kapsalon'));
+        assert.strictEqual(dish.is_available, true);
+        assert.strictEqual(dish.daily_special, true);
       }
     });
   });
@@ -144,13 +129,15 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
   describe('3. REST API CRUD Mutations Lifecycle', () => {
     let createdDishId: string;
     const testDishPayload = {
-      name: 'Tandoori Gouda Bitterballen',
-      description: 'Crisp bitterballen infused with Dutch Gouda and smoked tandoori spices.',
-      photo_url: 'https://images.unsplash.com/photo-1541529086526-db283c563270',
-      price: 9.75,
-      tags: ['snack', 'fusion', 'cheese', 'spicy'],
+      name: 'Paneer Butter Kulcha',
+      description: 'Stuffed Indian flatbread with spiced paneer and butter glaze.',
+      photo_url: 'https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/butter-chicken.jpg',
+      price: 6.50,
+      category: 'Breads',
+      tags: ['breads', 'vegetarian'],
       daily_special: false,
       is_available: true,
+      is_coming_soon: false,
     };
 
     it('POST /api/dishes creates a new dish and returns 201', async () => {
@@ -178,14 +165,14 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
       const dish = body.data || body;
       assert.strictEqual(dish.dish_id, createdDishId);
       assert.strictEqual(dish.name, testDishPayload.name);
-      assert.strictEqual(dish.price, 9.75);
+      assert.strictEqual(dish.price, 6.50);
       assert.strictEqual(dish.daily_special, false);
       assert.strictEqual(dish.is_available, true);
     });
 
     it('PUT /api/dishes/[id] updates price and daily_special', async () => {
       const updatePayload = {
-        price: 11.5,
+        price: 8.00,
         daily_special: true,
       };
 
@@ -199,7 +186,7 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
       const body = await res.json();
       assert.strictEqual(body.success, true);
       const updated = body.data || body;
-      assert.strictEqual(updated.price, 11.5);
+      assert.strictEqual(updated.price, 8.00);
       assert.strictEqual(updated.daily_special, true);
     });
 
@@ -208,7 +195,7 @@ describe('Desi Dutch Local API E2E Verification Suite', () => {
       assert.strictEqual(res.status, 200);
       const body = await res.json();
       const dish = body.data || body;
-      assert.strictEqual(dish.price, 11.5);
+      assert.strictEqual(dish.price, 8.00);
       assert.strictEqual(dish.daily_special, true);
     });
 

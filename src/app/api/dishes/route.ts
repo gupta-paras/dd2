@@ -10,8 +10,10 @@ export async function GET(request: NextRequest) {
       availability: searchParams.get('availability') ?? undefined,
       is_available: searchParams.get('is_available') ?? undefined,
       daily_special: searchParams.get('daily_special') ?? undefined,
+      category: searchParams.get('category') ?? undefined,
       tags: searchParams.get('tags') ?? undefined,
       name: searchParams.get('name') ?? undefined,
+      is_coming_soon: searchParams.get('is_coming_soon') ?? undefined,
     };
 
     const parsed = dishFilterSchema.safeParse(rawFilters);

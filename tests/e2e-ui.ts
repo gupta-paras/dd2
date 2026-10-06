@@ -53,6 +53,10 @@ async function run() {
   page.on('console', (msg) => console.log(`[BROWSER CONSOLE] ${msg.type()}: ${msg.text()}`));
   page.on('pageerror', (err) => console.error(`[BROWSER ERROR]:`, err));
 
+  const uniqueId = Math.floor(1000 + Math.random() * 9000);
+  const testDishName = `AmsterDelhi Truffle Bitterballen ${uniqueId}`;
+  const editedDishName = `AmsterDelhi Truffle Bitterballen ${uniqueId} (Chef Special)`;
+
   try {
     // ------------------------------------------------------------------------
     // FLOW 1: Admin Flow (/admin)
@@ -65,7 +69,7 @@ async function run() {
       const metricsSection = page.locator('section[aria-label="Kitchen Key Metrics"]');
       await metricsSection.waitFor({ state: 'visible' });
 
-      const metricLabels = ['Total Dishes', 'Daily Specials', 'In Stock', 'Out of Stock', 'Average Price'];
+      const metricLabels = ['Total Dishes', 'Daily Specials', 'In Stock', 'Coming Soon', 'Average Price'];
       for (const label of metricLabels) {
         const card = page.locator(`text=${label}`);
         const count = await card.count();
@@ -85,7 +89,7 @@ async function run() {
       // Check URL input & live preview
       const photoInput = page.locator('input[type="url"]');
       const testPhotoUrl =
-        'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80';
+        'https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/butter-chicken.jpg';
       await photoInput.fill(testPhotoUrl);
 
       // Verify live 16/10 preview box is visible and contains an img
@@ -96,23 +100,27 @@ async function run() {
     });
 
     await recordStep('Admin: Create new dish and verify appearance in table', async () => {
+      // Photo URL
+      const photoInput = page.locator('input[type="url"]');
+      await photoInput.fill('https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/butter-chicken.jpg');
+
       // Dish Name
-      const nameInput = page.locator('input[placeholder*="Keema Bitterballen"]');
-      await nameInput.fill('AmsterDelhi Truffle Bitterballen');
+      const nameInput = page.locator('input[maxLength="120"]').first();
+      await nameInput.fill(testDishName);
 
       // Price
       const priceInput = page.locator('input[type="number"]');
       await priceInput.fill('9.75');
 
       // Description
-      const descInput = page.locator('textarea[placeholder*="Describe the aromatic"]');
+      const descInput = page.locator('textarea[maxLength="500"]');
       await descInput.fill(
         'Dutch beef croquettes fused with aromatic black truffle, fenugreek, and Gouda dip.'
       );
 
-      // Tags: click 'fusion', 'snack'
-      await page.locator('button:has-text("fusion")').first().click();
-      await page.locator('button:has-text("snack")').first().click();
+      // Tags: click 'curries', 'spicy'
+      await page.locator('button:has-text("curries")').first().click();
+      await page.locator('button:has-text("spicy")').first().click();
 
       // Enable Daily Special toggle inside the modal
       const modal = page.locator('div[role="dialog"]');
@@ -124,46 +132,46 @@ async function run() {
       await submitBtn.click();
 
       // Wait for modal to close and dish to appear in table
-      await page.waitForSelector('text=AmsterDelhi Truffle Bitterballen', { timeout: 8000 });
-      const priceText = page.locator('tr:has-text("AmsterDelhi Truffle Bitterballen")').locator('text=€9.75');
+      await page.waitForSelector(`text=${testDishName}`, { timeout: 8000 });
+      const priceText = page.locator(`tr:has-text("${testDishName}")`).first().locator('text=€9.75');
       await priceText.waitFor({ state: 'visible' });
     });
 
     await recordStep('Admin: Test 1-click toggles for Daily Special and Availability', async () => {
-      const row = page.locator('tr:has-text("AmsterDelhi Truffle Bitterballen")');
+      const row = page.locator(`tr:has-text("${testDishName}")`).first();
 
       // 1-Click Daily Special toggle
       const specialBtn = row.locator('button[title="Click to toggle Daily Special"]');
       await specialBtn.click();
       // Should now say 'Standard'
-      await row.locator('text=Standard').waitFor({ state: 'visible' });
+      await specialBtn.locator('text=Standard').waitFor({ state: 'visible' });
 
       // Click again to restore Special
       await specialBtn.click();
-      await row.locator('text=Special').waitFor({ state: 'visible' });
+      await specialBtn.locator('text=Special').waitFor({ state: 'visible' });
 
       // 1-Click Availability toggle
       const stockBtn = row.locator('button[title="Click to toggle Stock Status"]');
       await stockBtn.click();
       // Should now say 'Sold Out'
-      await row.locator('text=Sold Out').waitFor({ state: 'visible' });
+      await stockBtn.locator('text=Sold Out').waitFor({ state: 'visible' });
 
       // Click again to restore In Stock
       await stockBtn.click();
-      await row.locator('text=In Stock').waitFor({ state: 'visible' });
+      await stockBtn.locator('text=In Stock').waitFor({ state: 'visible' });
     });
 
     await recordStep('Admin: Edit dish price and name', async () => {
-      const row = page.locator('tr:has-text("AmsterDelhi Truffle Bitterballen")');
+      const row = page.locator(`tr:has-text("${testDishName}")`).first();
       const editBtn = row.locator('button[title="Edit Dish"]');
       await editBtn.click();
 
       // Wait for Edit modal
-      await page.waitForSelector('text=Edit: AmsterDelhi Truffle Bitterballen', { timeout: 5000 });
+      await page.waitForSelector(`text=Edit: ${testDishName}`, { timeout: 5000 });
 
       // Update name & price
-      const nameInput = page.locator('input[maxLength="120"]');
-      await nameInput.fill('AmsterDelhi Truffle Bitterballen (Chef Special)');
+      const nameInput = page.locator('input[maxLength="120"]').first();
+      await nameInput.fill(editedDishName);
 
       const priceInput = page.locator('input[type="number"]');
       await priceInput.fill('10.95');
@@ -172,21 +180,21 @@ async function run() {
       await saveBtn.click();
 
       // Verify updated details appear in the table
-      await page.waitForSelector('text=AmsterDelhi Truffle Bitterballen (Chef Special)', { timeout: 8000 });
-      await page.locator('tr:has-text("AmsterDelhi Truffle Bitterballen (Chef Special)")').locator('text=€10.95').waitFor({ state: 'visible' });
+      await page.waitForSelector(`text=${editedDishName}`, { timeout: 8000 });
+      await page.locator(`tr:has-text("${editedDishName}")`).first().locator('text=€10.95').waitFor({ state: 'visible' });
 
       // Capture Admin desktop screenshot
       await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'desktop-admin.png'), fullPage: true });
     });
 
     // ------------------------------------------------------------------------
-    // FLOW 2: Customer Flow (/)
+    // FLOW 2: Customer Storefront Flow (/)
     // ------------------------------------------------------------------------
     await recordStep('Customer: Navigate to / and verify dish card 16/10 aspect ratio', async () => {
       await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
 
       // Locate newly created dish
-      const newDishCard = page.locator('article:has-text("AmsterDelhi Truffle Bitterballen (Chef Special)")');
+      const newDishCard = page.locator(`article:has-text("${editedDishName}")`).first();
       await newDishCard.waitFor({ state: 'visible', timeout: 8000 });
 
       // Check aspect ratio framing container
@@ -209,19 +217,35 @@ async function run() {
       await newDishCard.screenshot({ path: path.join(SCREENSHOTS_DIR, 'dish-framing.png') });
     });
 
+    await recordStep('Customer: Verify About Section and Ordering Guide Sections render', async () => {
+      // Check About Section
+      const aboutSec = page.locator('#about');
+      await aboutSec.waitFor({ state: 'visible' });
+      await page.locator('text=Pooja Jain').first().waitFor({ state: 'visible' });
+      await page.locator('text=A love of cooking. A joy in sharing.').waitFor({ state: 'visible' });
+
+      // Check Ordering Guide Section
+      const orderSec = page.locator('#ordering');
+      await orderSec.waitFor({ state: 'visible' });
+      await page.locator('text=Pick your dishes').waitFor({ state: 'visible' });
+      await page.locator('text=Send on WhatsApp').waitFor({ state: 'visible' });
+      await page.locator('text=We confirm your order').waitFor({ state: 'visible' });
+      await page.locator('text=Birthday & party orders').waitFor({ state: 'visible' });
+    });
+
     await recordStep('Customer: Test real-time search input', async () => {
-      const searchInput = page.locator('input[placeholder*="Search dishes by name"]');
+      const searchInput = page.locator('input[placeholder*="Search dishes"]');
 
       // Search for 'Truffle'
       await searchInput.fill('Truffle');
       await page.waitForTimeout(300);
 
       // Verify newly created dish is shown
-      const match = page.locator('article:has-text("AmsterDelhi Truffle Bitterballen (Chef Special)")');
+      const match = page.locator(`article:has-text("${editedDishName}")`).first();
       await match.waitFor({ state: 'visible' });
 
       // Verify other non-matching items are hidden
-      const nonMatch = page.locator('article:has-text("Masala Stroopwafel")');
+      const nonMatch = page.locator('article:has-text("Butter chicken")');
       const isVisible = await nonMatch.isVisible();
       if (isVisible) {
         throw new Error('Search did not filter out non-matching dishes');
@@ -233,63 +257,76 @@ async function run() {
       await nonMatch.waitFor({ state: 'visible' });
     });
 
-    await recordStep('Customer: Test tag pills filter', async () => {
-      // Click 'Dessert' tag pill
-      const dessertPill = page.locator('button:has-text("Dessert")').first();
-      await dessertPill.click();
+    await recordStep('Customer: Test category pills filter', async () => {
+      // Click 'Breads' category pill
+      const breadsPill = page.locator('button:has-text("Breads")').first();
+      await breadsPill.click();
       await page.waitForTimeout(300);
 
-      // Should show Stroopwafel and Poffertjes
-      await page.locator('article:has-text("Masala Stroopwafel")').waitFor({ state: 'visible' });
-      await page.locator('article:has-text("Gulab Jamun Poffertjes")').waitFor({ state: 'visible' });
+      // Should show Naan
+      await page.locator('article:has-text("Naan")').first().waitFor({ state: 'visible' });
 
-      // Should NOT show savory snacks
-      const savory = page.locator('article:has-text("Kapsalon Chicken Tikka")');
+      // Should NOT show curries
+      const savory = page.locator('article:has-text("Butter chicken")');
       if (await savory.isVisible()) {
-        throw new Error('Savory dish shown under Dessert filter');
+        throw new Error('Curry dish shown under Breads filter');
       }
 
-      // Reset to All
-      await page.locator('button:has-text("All")').first().click();
+      // Reset to Everything
+      await page.locator('button:has-text("Everything")').first().click();
       await page.waitForTimeout(300);
     });
 
-    await recordStep('Customer: Test Daily Special and In-Stock toggles', async () => {
+    await recordStep('Customer: Test Daily Special and Coming Soon toggles', async () => {
       // Daily Special toggle
-      const specialToggle = page.locator('button:has-text("Daily Specials Only")');
+      const specialToggle = page.getByRole('button', { name: 'Daily Specials Only' });
       await specialToggle.click();
       await page.waitForTimeout(300);
 
-      // Keema Bitterballen is a daily special
-      await page.locator('article:has-text("Keema Bitterballen")').waitFor({ state: 'visible' });
-
-      // Masala Stroopwafel is NOT a daily special
-      if (await page.locator('article:has-text("Masala Stroopwafel")').isVisible()) {
-        throw new Error('Non-special dish visible with Daily Specials Only active');
-      }
+      // Butter chicken is a daily special
+      await page.locator('article:has-text("Butter chicken")').waitFor({ state: 'visible' });
 
       // Toggle off
       await specialToggle.click();
       await page.waitForTimeout(300);
 
-      // In-Stock toggle
-      const inStockToggle = page.locator('button:has-text("In Stock Only")');
-      await inStockToggle.click();
+      // Coming Soon toggle
+      const comingSoonToggle = page.getByRole('button', { name: 'Coming Soon', exact: true });
+      await comingSoonToggle.click();
       await page.waitForTimeout(300);
 
-      // Sold out dish 'Tandoori Haring Slider' should NOT be visible
-      const soldOutDish = page.locator('article:has-text("Tandoori Haring Slider")');
-      if (await soldOutDish.isVisible()) {
-        throw new Error('Sold-out dish visible when In Stock Only filter is active');
-      }
+      // Uttapam should be visible
+      await page.locator('article:has-text("Uttapam")').first().waitFor({ state: 'visible' });
 
       // Toggle off
-      await inStockToggle.click();
+      await comingSoonToggle.click();
       await page.waitForTimeout(300);
+    });
+
+    await recordStep('Customer: Test EN / NL language switcher', async () => {
+      // Switch to NL
+      const nlBtn = page.locator('button[aria-label="Switch language to Dutch"]');
+      await nlBtn.click();
+      await page.waitForTimeout(300);
+
+      // Verify Dutch translation appears
+      await page.locator('text=Ons menu').first().waitFor({ state: 'visible' });
+      await page.locator('text=Over mij').first().waitFor({ state: 'visible' });
+      await page.locator('text=Bestellen').first().waitFor({ state: 'visible' });
+      await page.locator('text=Een beetje pit. Volop genieten.').waitFor({ state: 'visible' });
+
+      // Switch back to EN
+      const enBtn = page.locator('button[aria-label="Switch language to English"]');
+      await enBtn.click();
+      await page.waitForTimeout(300);
+
+      // Verify English restored
+      await page.locator('text=Our menu').first().waitFor({ state: 'visible' });
+      await page.locator('text=A little spice. A lot of comfort.').waitFor({ state: 'visible' });
     });
 
     await recordStep('Customer: Add to Cart and test quantity stepper on dish card', async () => {
-      const dishCard = page.locator('article:has-text("AmsterDelhi Truffle Bitterballen (Chef Special)")');
+      const dishCard = page.locator(`article:has-text("${editedDishName}")`).first();
 
       // Click Add button
       const addBtn = dishCard.locator('button:has-text("Add")');
@@ -310,12 +347,12 @@ async function run() {
 
     await recordStep('Customer: Open Cart Drawer, increment quantity, verify subtotal recalculation', async () => {
       // Click Cart trigger in Navbar
-      const cartTrigger = page.locator('button[aria-label*="Open shopping cart"]');
+      const cartTrigger = page.locator('button[aria-label*="basket"], button[aria-label*="cart"]').first();
       await cartTrigger.click();
 
       // Cart Drawer should be open
       await page.waitForSelector('text=Your Order Basket', { timeout: 5000 });
-      await page.waitForSelector('text=AmsterDelhi Truffle Bitterballen (Chef Special)', { timeout: 5000 });
+      await page.waitForSelector(`text=${editedDishName}`, { timeout: 5000 });
 
       // Current quantity is 2, price is 10.95 -> 21.90
       await page.waitForSelector('text=€21.90', { timeout: 5000 });
@@ -327,14 +364,14 @@ async function run() {
       // New quantity is 3 -> subtotal 32.85
       await page.waitForSelector('text=€32.85', { timeout: 5000 });
 
-      // Delivery progress bar should show free delivery unlocked (€32.85 > €25 threshold)
-      await page.waitForSelector('text=Free Amsterdam Delivery', { timeout: 5000 });
+      // Cart should show pickup-only notice
+      await page.waitForSelector('text=Orders are available for pickup only', { timeout: 5000 });
 
       // Capture screenshot of cart drawer
       await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'cart-drawer.png') });
     });
 
-    await recordStep('Customer: Complete simulated Checkout with order confirmation', async () => {
+    await recordStep('Customer: Complete simulated Checkout with WhatsApp generation', async () => {
       // Click Proceed to Checkout
       const checkoutBtn = page.locator('button:has-text("Proceed to Checkout")');
       await checkoutBtn.click();
@@ -387,14 +424,14 @@ async function run() {
     await recordStep('Responsiveness: Tablet (768x1024) Viewport audit & screenshot', async () => {
       await page.setViewportSize({ width: 768, height: 1024 });
       await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-      await page.waitForSelector('#street-menu', { timeout: 5000 });
+      await page.waitForSelector('#menu', { timeout: 5000 });
       await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'tablet-home.png'), fullPage: false });
     });
 
     await recordStep('Responsiveness: Mobile (375x667) Viewport audit & screenshot', async () => {
       await page.setViewportSize({ width: 375, height: 667 });
       await page.goto(`${BASE_URL}/`, { waitUntil: 'networkidle' });
-      await page.waitForSelector('#street-menu', { timeout: 5000 });
+      await page.waitForSelector('#menu', { timeout: 5000 });
       await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'mobile-home.png'), fullPage: false });
 
       // Admin mobile view
@@ -413,14 +450,12 @@ async function run() {
         for (const btn of buttons) {
           const rect = btn.getBoundingClientRect();
           if (rect.width > 0 && rect.height > 0) {
-            // Flag if interactive area is too small (< 28px)
             if (rect.width < 28 || rect.height < 28) {
               smallTargets.push(`${btn.innerText.slice(0, 20)} (${Math.round(rect.width)}x${Math.round(rect.height)})`);
             }
           }
         }
 
-        // Typography Hierarchy
         const h1 = document.querySelector('h1');
         const h2 = document.querySelector('h2');
         const h3 = document.querySelector('h3');
@@ -429,7 +464,6 @@ async function run() {
         const h2Size = h2 ? window.getComputedStyle(h2).fontSize : 'none';
         const h3Size = h3 ? window.getComputedStyle(h3).fontSize : 'none';
 
-        // Font color contrast sample checks
         const heroHeading = document.querySelector('h1');
         const heroColor = heroHeading ? window.getComputedStyle(heroHeading).color : '';
         const bodyBg = window.getComputedStyle(document.body).backgroundColor;

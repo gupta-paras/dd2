@@ -22,10 +22,18 @@ export function getRestaurantConfig(): RestaurantConfig {
       const parsed = YAML.parse(fileContent) as Partial<RestaurantConfig>;
       cachedConfig = {
         restaurant: { ...DEFAULT_CONFIG.restaurant, ...parsed.restaurant },
-        address: { ...DEFAULT_CONFIG.address, ...parsed.address },
-        timings: { ...DEFAULT_CONFIG.timings, ...parsed.timings },
-        delivery: { ...DEFAULT_CONFIG.delivery, ...parsed.delivery },
-        features: parsed.features || DEFAULT_CONFIG.features,
+        ordering_notice: { ...DEFAULT_CONFIG.ordering_notice, ...parsed.ordering_notice },
+        hero: { ...DEFAULT_CONFIG.hero, ...parsed.hero },
+        menu_section: { ...DEFAULT_CONFIG.menu_section, ...parsed.menu_section },
+        about: { ...DEFAULT_CONFIG.about, ...parsed.about },
+        how_to_order: {
+          eyebrow: parsed.how_to_order?.eyebrow || DEFAULT_CONFIG.how_to_order.eyebrow,
+          eyebrow_nl: parsed.how_to_order?.eyebrow_nl || DEFAULT_CONFIG.how_to_order.eyebrow_nl,
+          title: parsed.how_to_order?.title || DEFAULT_CONFIG.how_to_order.title,
+          title_nl: parsed.how_to_order?.title_nl || DEFAULT_CONFIG.how_to_order.title_nl,
+          steps: parsed.how_to_order?.steps || DEFAULT_CONFIG.how_to_order.steps,
+        },
+        occasions: { ...DEFAULT_CONFIG.occasions, ...parsed.occasions },
       };
       lastReadTime = now;
       return cachedConfig;

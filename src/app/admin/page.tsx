@@ -168,6 +168,44 @@ export default function AdminPage() {
     }
   };
 
+  // 1-Click Inline Toggle: Coming Soon
+  const handleToggleComingSoon = async (dish: Dish) => {
+    const newComingSoon = !dish.is_coming_soon;
+
+    // Optimistic update
+    setDishes((prev) =>
+      prev.map((d) =>
+        d.dish_id === dish.dish_id ? { ...d, is_coming_soon: newComingSoon } : d
+      )
+    );
+
+    try {
+      const res = await fetch(`/api/dishes/${dish.dish_id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_coming_soon: newComingSoon }),
+      });
+
+      const json = await res.json();
+      if (!res.ok || !json.success) {
+        throw new Error(json.error || 'Update failed');
+      }
+
+      success(
+        newComingSoon ? 'Marked Coming Soon' : 'Marked Active',
+        `"${dish.name}" ${newComingSoon ? 'is now coming soon' : 'is now active'}.`
+      );
+    } catch {
+      // Revert optimistic update
+      setDishes((prev) =>
+        prev.map((d) =>
+          d.dish_id === dish.dish_id ? { ...d, is_coming_soon: dish.is_coming_soon } : d
+        )
+      );
+      error('Update Failed', `Could not toggle coming soon for "${dish.name}".`);
+    }
+  };
+
   // 1-Click Inline Toggle: Availability (In Stock / Sold Out)
   const handleToggleAvailability = async (dish: Dish) => {
     const newAvailability = !dish.is_available;
@@ -224,7 +262,7 @@ export default function AdminPage() {
                 Menu Items &amp; Inventory Controls
               </h2>
               <p className="text-xs text-stone-500 mt-0.5">
-                Toggle availability or daily specials instantly with one click.
+                Toggle availability, coming soon, or daily specials instantly with one click.
               </p>
             </div>
           </div>
@@ -243,12 +281,13 @@ export default function AdminPage() {
               onDelete={handleOpenDeleteModal}
               onToggleSpecial={handleToggleSpecial}
               onToggleAvailability={handleToggleAvailability}
+              onToggleComingSoon={handleToggleComingSoon}
             />
           )}
         </section>
       </main>
 
-      {/* Add / Edit Dish Modal with Key to reset form instance */}
+      {/* Add / Edit Dish Modal */}
       <DishFormModal
         key={selectedDish ? selectedDish.dish_id : `new-${isFormModalOpen}`}
         isOpen={isFormModalOpen}

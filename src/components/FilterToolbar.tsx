@@ -1,17 +1,20 @@
 'use client';
 
 import React from 'react';
-import { Search, X, Sparkles, CheckCircle2, RotateCcw, SlidersHorizontal } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { Search, X, Sparkles, CheckCircle2, RotateCcw, SlidersHorizontal, Clock } from 'lucide-react';
 
-export const TAG_OPTIONS = [
-  'All',
-  'Main',
-  'Snack',
-  'Dessert',
-  'Fusion',
-  'Spicy',
-  'Vegetarian',
-  'Halal',
+export const CATEGORIES_CONFIG = [
+  { id: 'All', en: 'Everything', nl: 'Alles' },
+  { id: 'Curries', en: 'Curries', nl: "Curry's" },
+  { id: 'Biryani', en: 'Biryani', nl: 'Biryani' },
+  { id: 'Snacks', en: 'Snacks', nl: 'Snacks' },
+  { id: 'Breads', en: 'Breads', nl: 'Broden' },
+  { id: 'Rice', en: 'Rice', nl: 'Rijst' },
+  { id: 'Drinks', en: 'Drinks', nl: 'Dranken' },
+  { id: 'South Indian', en: 'South Indian', nl: 'Zuid-Indiaas' },
+  { id: 'Desserts', en: 'Desserts', nl: 'Nagerechten' },
+  { id: 'Vegetarian', en: 'Vegetarian', nl: 'Vegetarisch' },
 ] as const;
 
 interface FilterToolbarProps {
@@ -23,6 +26,8 @@ interface FilterToolbarProps {
   onDailySpecialChange: (val: boolean) => void;
   inStockOnly: boolean;
   onInStockChange: (val: boolean) => void;
+  comingSoonOnly?: boolean;
+  onComingSoonChange?: (val: boolean) => void;
   onResetFilters: () => void;
   totalCount: number;
   filteredCount: number;
@@ -37,15 +42,21 @@ export function FilterToolbar({
   onDailySpecialChange,
   inStockOnly,
   onInStockChange,
+  comingSoonOnly = false,
+  onComingSoonChange,
   onResetFilters,
   totalCount,
   filteredCount,
 }: FilterToolbarProps) {
+  const { language, t } = useLanguage();
+  const isNl = language === 'nl';
+
   const isAnyFilterActive =
     search.trim().length > 0 ||
     activeTag !== 'All' ||
     dailySpecialOnly ||
-    inStockOnly;
+    inStockOnly ||
+    comingSoonOnly;
 
   return (
     <div className="w-full space-y-4">
@@ -60,7 +71,10 @@ export function FilterToolbar({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder="Search dishes by name (e.g., Bitterballen, Kapsalon, Wafel)..."
+            placeholder={t(
+              'Search dishes (e.g. Butter chicken, Biryani, Dosa)...',
+              'Zoek gerechten (bijv. Butter chicken, Biryani, Dosa)...'
+            )}
             className="w-full pl-10 pr-9 py-2.5 rounded-full bg-white border border-stone-200 text-stone-900 text-sm placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 shadow-2xs transition-all"
           />
           {search && (
@@ -76,7 +90,7 @@ export function FilterToolbar({
 
         {/* Toggles and Reset */}
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
-          {/* Chef's Daily Specials Toggle (OR Filter) */}
+          {/* Daily Specials Toggle */}
           <button
             type="button"
             onClick={() => onDailySpecialChange(!dailySpecialOnly)}
@@ -87,10 +101,10 @@ export function FilterToolbar({
             }`}
           >
             <Sparkles className={`w-3.5 h-3.5 ${dailySpecialOnly ? 'text-white' : 'text-amber-500'}`} />
-            <span>Daily Specials Only</span>
+            <span>{t('Daily Specials Only', 'Favorieten uit de keuken')}</span>
           </button>
 
-          {/* In Stock Only Toggle (AND Filter) */}
+          {/* In Stock Only Toggle */}
           <button
             type="button"
             onClick={() => onInStockChange(!inStockOnly)}
@@ -101,8 +115,24 @@ export function FilterToolbar({
             }`}
           >
             <CheckCircle2 className={`w-3.5 h-3.5 ${inStockOnly ? 'text-white' : 'text-emerald-600'}`} />
-            <span>In Stock Only</span>
+            <span>{t('In Stock Only', 'Op voorraad')}</span>
           </button>
+
+          {/* Coming Soon Toggle */}
+          {onComingSoonChange && (
+            <button
+              type="button"
+              onClick={() => onComingSoonChange(!comingSoonOnly)}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer border select-none ${
+                comingSoonOnly
+                  ? 'bg-purple-600 text-white border-purple-700 shadow-xs'
+                  : 'bg-white text-stone-700 border-stone-200 hover:border-purple-300 hover:bg-purple-50/50'
+              }`}
+            >
+              <Clock className={`w-3.5 h-3.5 ${comingSoonOnly ? 'text-white' : 'text-purple-600'}`} />
+              <span>{t('Coming Soon', 'Binnenkort')}</span>
+            </button>
+          )}
 
           {/* Reset Filters Button */}
           {isAnyFilterActive && (
@@ -110,36 +140,37 @@ export function FilterToolbar({
               type="button"
               onClick={onResetFilters}
               className="inline-flex items-center gap-1 px-3 py-2 rounded-full text-xs font-medium text-stone-600 hover:text-stone-900 bg-stone-100 hover:bg-stone-200 border border-stone-200 transition-all cursor-pointer"
-              title="Reset all filters"
+              title={t('Reset all filters', 'Filters resetten')}
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset</span>
+              <span>{t('Reset', 'Resetten')}</span>
             </button>
           )}
         </div>
       </div>
 
-      {/* Tag Filter Pills Row */}
+      {/* Category Filter Pills Row */}
       <div className="flex items-center justify-between gap-4 pt-1 border-t border-stone-200/60">
         <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
           <span className="text-xs font-medium text-stone-400 mr-1 hidden sm:inline flex items-center gap-1">
             <SlidersHorizontal className="w-3 h-3" />
-            Category:
+            {t('Category:', 'Categorie:')}
           </span>
-          {TAG_OPTIONS.map((tag) => {
-            const isActive = activeTag.toLowerCase() === tag.toLowerCase();
+          {CATEGORIES_CONFIG.map((cat) => {
+            const isActive = activeTag.toLowerCase() === cat.id.toLowerCase();
+            const label = isNl ? cat.nl : cat.en;
             return (
               <button
-                key={tag}
+                key={cat.id}
                 type="button"
-                onClick={() => onTagChange(tag)}
+                onClick={() => onTagChange(cat.id)}
                 className={`whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-medium transition-all duration-150 cursor-pointer select-none ${
                   isActive
                     ? 'bg-stone-900 text-white shadow-xs'
                     : 'bg-white text-stone-600 border border-stone-200 hover:border-stone-300 hover:text-stone-900 hover:bg-stone-50'
                 }`}
               >
-                {tag}
+                {label}
               </button>
             );
           })}
@@ -147,7 +178,9 @@ export function FilterToolbar({
 
         {/* Counter indicator */}
         <div className="text-xs text-stone-500 whitespace-nowrap shrink-0">
-          Showing <span className="font-semibold text-stone-900">{filteredCount}</span> of {totalCount}
+          {t('Showing', 'Getoond')}{' '}
+          <span className="font-semibold text-stone-900">{filteredCount}</span> {t('of', 'van')}{' '}
+          {totalCount}
         </div>
       </div>
     </div>

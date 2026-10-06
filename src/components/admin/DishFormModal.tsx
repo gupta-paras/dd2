@@ -9,6 +9,7 @@ import {
   CheckCircle2,
   Ban,
   Image as ImageIcon,
+  Clock,
 } from 'lucide-react';
 
 interface DishFormModalProps {
@@ -19,42 +20,53 @@ interface DishFormModalProps {
   mode: 'create' | 'edit';
 }
 
+const CATEGORY_OPTIONS = [
+  'Curries',
+  'Biryani',
+  'Snacks',
+  'Breads',
+  'Rice',
+  'Drinks',
+  'South Indian',
+  'Desserts',
+];
+
 const PRESET_TAGS = [
-  'main',
-  'snack',
-  'dessert',
-  'fusion',
-  'spicy',
+  'curries',
+  'biryani',
+  'snacks',
+  'breads',
+  'rice',
+  'drinks',
+  'south-indian',
+  'desserts',
   'vegetarian',
+  'spicy',
   'halal',
-  'cheese',
-  'lamb',
-  'beef',
-  'seafood',
   'sweet',
   'comfort-food',
 ];
 
 const SAMPLE_PHOTO_PRESETS = [
   {
-    name: 'Keema Bitterballen',
-    url: 'https://images.unsplash.com/photo-1541529086526-db283c563270?auto=format&fit=crop&w=800&q=80',
+    name: 'Butter Chicken',
+    url: 'https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/butter-chicken.jpg',
   },
   {
-    name: 'Kapsalon Tikka',
-    url: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80',
+    name: 'Biryani',
+    url: 'https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/biryani.jpg',
   },
   {
-    name: 'Paneer Kroket',
-    url: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80',
+    name: 'Samosa',
+    url: 'https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/samosa.jpg',
   },
   {
-    name: 'Masala Stroopwafel',
-    url: 'https://images.unsplash.com/photo-1587314168485-3236d6710814?auto=format&fit=crop&w=800&q=80',
+    name: 'Lemon Rice',
+    url: 'https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/menu-lemon-rice.jpg',
   },
   {
-    name: 'Butter Chicken Fries',
-    url: 'https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=800&q=80',
+    name: 'Onion Tomato Uttapam',
+    url: 'https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/menu-onion-tomato-uttapam.jpg',
   },
 ];
 
@@ -70,13 +82,14 @@ export function DishFormModal({
   const [photoUrl, setPhotoUrl] = useState(
     initialDish?.photo_url ?? SAMPLE_PHOTO_PRESETS[0].url
   );
+  const [category, setCategory] = useState(initialDish?.category ?? 'Curries');
   const [price, setPrice] = useState(
-    initialDish ? initialDish.price.toString() : '8.50'
+    initialDish ? initialDish.price.toString() : '12.00'
   );
   const [tags, setTags] = useState<string[]>(
     initialDish?.tags && initialDish.tags.length > 0
       ? initialDish.tags
-      : ['snack', 'fusion', 'spicy']
+      : ['curries']
   );
   const [newTagInput, setNewTagInput] = useState('');
   const [dailySpecial, setDailySpecial] = useState(
@@ -84,6 +97,9 @@ export function DishFormModal({
   );
   const [isAvailable, setIsAvailable] = useState(
     initialDish?.is_available ?? true
+  );
+  const [isComingSoon, setIsComingSoon] = useState(
+    Boolean(initialDish?.is_coming_soon) || (initialDish ? initialDish.price === 0 : false)
   );
 
   const [imageLoadError, setImageLoadError] = useState(false);
@@ -119,17 +135,13 @@ export function DishFormModal({
       setErrorMessage('Dish name is required');
       return;
     }
-    if (!description.trim()) {
-      setErrorMessage('Dish description is required');
-      return;
-    }
     if (!photoUrl.trim()) {
       setErrorMessage('Photo URL is required');
       return;
     }
-    const parsedPrice = parseFloat(price);
-    if (isNaN(parsedPrice) || parsedPrice <= 0) {
-      setErrorMessage('Price must be a valid number greater than 0');
+    const parsedPrice = isComingSoon ? 0 : parseFloat(price);
+    if (!isComingSoon && (isNaN(parsedPrice) || parsedPrice < 0)) {
+      setErrorMessage('Price must be a valid number');
       return;
     }
     if (tags.length === 0) {
@@ -144,9 +156,11 @@ export function DishFormModal({
         description: description.trim(),
         photo_url: photoUrl.trim(),
         price: parsedPrice,
+        category: category.trim(),
         tags,
         daily_special: dailySpecial,
         is_available: isAvailable,
+        is_coming_soon: isComingSoon,
       });
       onClose();
     } catch (err: unknown) {
@@ -172,8 +186,8 @@ export function DishFormModal({
             </h2>
             <p className="text-xs text-stone-500 mt-0.5">
               {mode === 'create'
-                ? 'Create a new street food item for the live menu.'
-                : 'Modify dish ingredients, live pricing, and stock status.'}
+                ? 'Create a new dish entry for the live menu.'
+                : 'Modify dish details, pricing, coming-soon status, and availability.'}
             </p>
           </div>
           <button
@@ -210,7 +224,7 @@ export function DishFormModal({
                       setPhotoUrl(e.target.value);
                       setImageLoadError(false);
                     }}
-                    placeholder="https://images.unsplash.com/..."
+                    placeholder="https://desi-dutch-kitchen.sj-ams.chatgpt.site/images/..."
                     className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-xs focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
                   />
                 </div>
@@ -218,7 +232,7 @@ export function DishFormModal({
                 {/* Preset URL quick pickers */}
                 <div className="space-y-1.5">
                   <span className="text-[11px] font-semibold text-stone-500 block">
-                    Quick Sample Presets:
+                    Reference Presets:
                   </span>
                   <div className="flex flex-wrap gap-1.5">
                     {SAMPLE_PHOTO_PRESETS.map((sample) => (
@@ -270,7 +284,11 @@ export function DishFormModal({
                       </span>
                     ) : <span />}
 
-                    {isAvailable ? (
+                    {isComingSoon ? (
+                      <span className="glass-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-purple-900 bg-purple-50/90 border border-purple-200">
+                        Coming Soon
+                      </span>
+                    ) : isAvailable ? (
                       <span className="glass-badge inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold text-emerald-800 border border-emerald-200">
                         In Stock
                       </span>
@@ -284,9 +302,9 @@ export function DishFormModal({
               </div>
             </div>
 
-            {/* Dish Name & Price */}
+            {/* Dish Name, Category & Price */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="sm:col-span-2">
+              <div>
                 <div className="flex justify-between items-center mb-1">
                   <label className="text-xs font-bold text-stone-700">
                     Dish Name
@@ -301,9 +319,26 @@ export function DishFormModal({
                   maxLength={120}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Keema Bitterballen with Mint Mayo"
+                  placeholder="e.g. Butter chicken"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-stone-700 mb-1">
+                  Category
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 font-semibold"
+                >
+                  {CATEGORY_OPTIONS.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -317,12 +352,14 @@ export function DishFormModal({
                   <input
                     type="number"
                     step="0.01"
-                    min="0.01"
-                    required
-                    value={price}
+                    min="0"
+                    disabled={isComingSoon}
+                    value={isComingSoon ? '0.00' : price}
                     onChange={(e) => setPrice(e.target.value)}
-                    placeholder="8.50"
-                    className="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 font-bold"
+                    placeholder="12.00"
+                    className={`w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 font-bold ${
+                      isComingSoon ? 'opacity-50 cursor-not-allowed bg-stone-100' : ''
+                    }`}
                   />
                 </div>
               </div>
@@ -339,12 +376,11 @@ export function DishFormModal({
                 </span>
               </div>
               <textarea
-                required
                 rows={3}
                 maxLength={500}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe the aromatic flavors, slow-cooked meats, Dutch Gouda, or spices..."
+                placeholder="Tender chicken cooked in a creamy tomato sauce with aromatic spices..."
                 className="w-full px-3.5 py-2.5 rounded-xl border border-stone-200 bg-white text-stone-900 text-sm focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 leading-relaxed"
               />
             </div>
@@ -382,7 +418,7 @@ export function DishFormModal({
                   type="text"
                   value={newTagInput}
                   onChange={(e) => setNewTagInput(e.target.value)}
-                  placeholder="Add custom tag (e.g. gluten-free, truffle)..."
+                  placeholder="Add custom tag (e.g. vegan, mild)..."
                   className="max-w-xs px-3 py-1.5 text-xs rounded-lg border border-stone-200 bg-white text-stone-900 focus:outline-none focus:border-amber-500"
                 />
                 <button
@@ -394,7 +430,7 @@ export function DishFormModal({
                 </button>
               </div>
 
-              {/* Active tags preview pills with remove action */}
+              {/* Active tags preview pills */}
               <div className="pt-1 flex flex-wrap gap-1.5 items-center">
                 <span className="text-[11px] text-stone-400">Selected tags:</span>
                 {tags.map((t) => (
@@ -415,8 +451,8 @@ export function DishFormModal({
               </div>
             </div>
 
-            {/* Toggles for Daily Special and Availability */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-stone-200">
+            {/* Toggles for Daily Special, Coming Soon, and Availability */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-stone-200">
               {/* Daily Special Toggle */}
               <div
                 onClick={() => setDailySpecial(!dailySpecial)}
@@ -441,7 +477,7 @@ export function DishFormModal({
                       Daily Special
                     </p>
                     <p className="text-[10px] text-stone-500">
-                      Feature prominently on storefront
+                      Featured item
                     </p>
                   </div>
                 </div>
@@ -454,6 +490,48 @@ export function DishFormModal({
                   <div
                     className={`w-5 h-5 rounded-full bg-white transition-transform ${
                       dailySpecial ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </div>
+              </div>
+
+              {/* Coming Soon Toggle */}
+              <div
+                onClick={() => setIsComingSoon(!isComingSoon)}
+                className={`p-3.5 rounded-2xl border cursor-pointer select-none transition-all flex items-center justify-between ${
+                  isComingSoon
+                    ? 'bg-purple-50/80 border-purple-300 ring-1 ring-purple-400'
+                    : 'bg-white border-stone-200 hover:border-stone-300'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                      isComingSoon
+                        ? 'bg-purple-600 text-white'
+                        : 'bg-stone-100 text-stone-400'
+                    }`}
+                  >
+                    <Clock className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-stone-900">
+                      Coming Soon
+                    </p>
+                    <p className="text-[10px] text-stone-500">
+                      Badge &amp; disable ordering
+                    </p>
+                  </div>
+                </div>
+
+                <div
+                  className={`w-11 h-6 rounded-full transition-colors relative p-0.5 ${
+                    isComingSoon ? 'bg-purple-600' : 'bg-stone-300'
+                  }`}
+                >
+                  <div
+                    className={`w-5 h-5 rounded-full bg-white transition-transform ${
+                      isComingSoon ? 'translate-x-5' : 'translate-x-0'
                     }`}
                   />
                 </div>
@@ -484,10 +562,10 @@ export function DishFormModal({
                   </div>
                   <div>
                     <p className="text-xs font-bold text-stone-900">
-                      {isAvailable ? 'In Stock (Available)' : 'Out of Stock (Sold Out)'}
+                      {isAvailable ? 'In Stock' : 'Sold Out'}
                     </p>
                     <p className="text-[10px] text-stone-500">
-                      {isAvailable ? 'Customers can order' : 'Disables order button'}
+                      {isAvailable ? 'Available' : 'Unavailable'}
                     </p>
                   </div>
                 </div>

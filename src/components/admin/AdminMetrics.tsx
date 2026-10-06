@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Dish } from '@/types';
-import { Utensils, Sparkles, CheckCircle2, Ban, Euro } from 'lucide-react';
+import { Utensils, Sparkles, CheckCircle2, Clock, Euro } from 'lucide-react';
 
 interface AdminMetricsProps {
   dishes: Dish[];
@@ -11,11 +11,12 @@ interface AdminMetricsProps {
 export function AdminMetrics({ dishes }: AdminMetricsProps) {
   const totalDishes = dishes.length;
   const dailySpecialsCount = dishes.filter((d) => d.daily_special).length;
-  const inStockCount = dishes.filter((d) => d.is_available).length;
-  const outOfStockCount = dishes.filter((d) => !d.is_available).length;
+  const inStockCount = dishes.filter((d) => d.is_available && !d.is_coming_soon).length;
+  const comingSoonCount = dishes.filter((d) => d.is_coming_soon || d.price === 0).length;
+  const pricedDishes = dishes.filter((d) => !d.is_coming_soon && d.price > 0);
   const avgPrice =
-    totalDishes > 0
-      ? dishes.reduce((acc, d) => acc + d.price, 0) / totalDishes
+    pricedDishes.length > 0
+      ? pricedDishes.reduce((acc, d) => acc + d.price, 0) / pricedDishes.length
       : 0;
 
   const metrics = [
@@ -33,7 +34,7 @@ export function AdminMetrics({ dishes }: AdminMetricsProps) {
       icon: Sparkles,
       color: 'text-amber-600',
       bg: 'bg-amber-50',
-      description: 'Highlighted on storefront',
+      description: 'Featured daily items',
     },
     {
       label: 'In Stock',
@@ -44,12 +45,12 @@ export function AdminMetrics({ dishes }: AdminMetricsProps) {
       description: 'Ready to order',
     },
     {
-      label: 'Out of Stock',
-      value: outOfStockCount,
-      icon: Ban,
-      color: 'text-rose-600',
-      bg: 'bg-rose-50',
-      description: 'Marked unavailable',
+      label: 'Coming Soon',
+      value: comingSoonCount,
+      icon: Clock,
+      color: 'text-purple-600',
+      bg: 'bg-purple-50',
+      description: 'Preview items',
     },
     {
       label: 'Average Price',
@@ -57,7 +58,7 @@ export function AdminMetrics({ dishes }: AdminMetricsProps) {
       icon: Euro,
       color: 'text-orange-600',
       bg: 'bg-orange-50',
-      description: 'Across all categories',
+      description: 'Active catalog items',
     },
   ];
 

@@ -3,10 +3,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { useConfig } from '@/context/ConfigContext';
-import { Heart, MapPin, Clock, Phone, ShieldCheck, Sparkles, MessageCircle } from 'lucide-react';
+import { useLanguage } from '@/context/LanguageContext';
+import { Heart, Clock, MessageCircle, ShieldCheck, Globe, UtensilsCrossed } from 'lucide-react';
 
 export function Footer() {
   const { config } = useConfig();
+  const { lang, setLang, t } = useLanguage();
+
+  const isNl = lang === 'nl';
 
   return (
     <footer className="mt-auto bg-stone-900 text-stone-300 border-t border-stone-800">
@@ -23,59 +27,40 @@ export function Footer() {
                   {config.restaurant.name}
                 </h3>
                 <p className="text-xs text-stone-400">
-                  {config.restaurant.cuisine_label}
+                  {isNl ? config.restaurant.cuisine_label_nl : config.restaurant.cuisine_label}
                 </p>
               </div>
             </div>
-            <p className="text-sm text-stone-400 max-w-sm leading-relaxed">
-              Serving the authentic diversity of all Indian regional cuisines—North, South, Awadhi, Coastal &amp; Street Chaats—elevated with refined Western culinary craft.
+            <p className="text-xs text-amber-400 font-medium">
+              {isNl ? config.restaurant.tagline_nl : config.restaurant.tagline}
             </p>
-            <div className="flex items-center gap-2 text-xs text-amber-400">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>100% Halal Meats • Fresh Seasonal Produce</span>
-            </div>
+            <p className="text-sm text-stone-400 max-w-sm leading-relaxed">
+              {t(
+                'Desi Dutch serves authentic Indian home cooking, prepared with passion and soul. Fresh ingredients, comforting spices, and pure hospitality.',
+                'Desi Dutch serveert authentieke Indiase thuisgerechten, met passie en toewijding bereid. Verse ingrediënten, verwarmende specerijen en oprechte gastvrijheid.'
+              )}
+            </p>
           </div>
 
-          {/* Location & Hours */}
+          {/* Ordering & Collection */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-stone-200">
-              Kitchen &amp; Pickup
+              {t('Ordering & Pickup', 'Bestellen & Afhalen')}
             </h4>
             <div className="space-y-2.5 text-xs text-stone-400">
               <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <a
-                  href={config.address.maps_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-amber-400 transition-colors"
-                >
-                  {config.address.full}
-                </a>
-              </div>
-              <div className="flex items-start gap-2">
                 <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                <div>
-                  <p>{config.timings.display_hours}</p>
-                  <p className="text-[11px] text-stone-500">{config.timings.service_note}</p>
-                </div>
+                <p className="leading-snug">
+                  {isNl ? config.ordering_notice.pickup_info_nl : config.ordering_notice.pickup_info}
+                </p>
               </div>
-              <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-amber-500 shrink-0" />
-                <a
-                  href={`tel:${config.restaurant.phone.replace(/[^0-9+]/g, '')}`}
-                  className="hover:text-amber-400 transition-colors"
-                >
-                  {config.restaurant.phone}
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-1">
                 <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                 <a
                   href={`https://wa.me/${config.restaurant.whatsapp_phone_raw}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-emerald-400 transition-colors"
+                  className="hover:text-emerald-400 transition-colors font-medium text-emerald-400"
                 >
                   WhatsApp: {config.restaurant.whatsapp_number}
                 </a>
@@ -83,42 +68,72 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick Links & Admin */}
+          {/* Quick Links & Language */}
           <div className="space-y-3">
             <h4 className="text-xs font-bold uppercase tracking-wider text-stone-200">
-              Quick Portals
+              {t('Quick Navigation', 'Navigatie')}
             </h4>
             <ul className="space-y-2 text-xs text-stone-400">
               <li>
-                <Link href="/" className="hover:text-amber-400 transition-colors">
-                  Full Menu &amp; Specials
-                </Link>
+                <a href="#menu" className="hover:text-amber-400 transition-colors flex items-center gap-1.5">
+                  <UtensilsCrossed className="w-3.5 h-3.5 text-stone-500" />
+                  {t('Our menu', 'Ons menu')}
+                </a>
+              </li>
+              <li>
+                <a href="#about" className="hover:text-amber-400 transition-colors">
+                  {t('About me', 'Over mij')}
+                </a>
+              </li>
+              <li>
+                <a href="#ordering" className="hover:text-amber-400 transition-colors">
+                  {t('How to order', 'Bestellen')}
+                </a>
               </li>
               <li>
                 <Link
                   href="/admin"
-                  className="inline-flex items-center gap-1.5 hover:text-amber-400 transition-colors font-medium"
+                  className="inline-flex items-center gap-1.5 hover:text-amber-400 transition-colors font-medium text-stone-300"
                 >
-                  <ShieldCheck className="w-3.5 h-3.5 text-stone-400" />
-                  Kitchen Admin Portal
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                  {t('Kitchen Admin Portal', 'Keuken Beheer')}
                 </Link>
               </li>
-              <li>
-                <span className="text-stone-500">Amsterdam E-Bike Delivery</span>
-              </li>
-              <li>
-                <span className="text-stone-500">Catering &amp; Special Events</span>
+              <li className="pt-2">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-stone-800 border border-stone-700 text-stone-300 text-xs">
+                  <Globe className="w-3.5 h-3.5 text-amber-500" />
+                  <span className="text-[11px] text-stone-400">{t('Language:', 'Taal:')}</span>
+                  <button
+                    type="button"
+                    onClick={() => setLang('en')}
+                    className={`font-semibold cursor-pointer ${
+                      lang === 'en' ? 'text-amber-400 underline underline-offset-2' : 'hover:text-white'
+                    }`}
+                  >
+                    EN
+                  </button>
+                  <span className="text-stone-600">|</span>
+                  <button
+                    type="button"
+                    onClick={() => setLang('nl')}
+                    className={`font-semibold cursor-pointer ${
+                      lang === 'nl' ? 'text-amber-400 underline underline-offset-2' : 'hover:text-white'
+                    }`}
+                  >
+                    NL
+                  </button>
+                </div>
               </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-stone-800 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-500">
-          <p>© 2026 {config.restaurant.name}. All rights reserved.</p>
+          <p>© 2026 {config.restaurant.name}. {t('All rights reserved.', 'Alle rechten voorbehouden.')}</p>
           <p className="flex items-center gap-1">
-            <span>Crafted with</span>
+            <span>{t('Crafted with', 'Gemaakt met')}</span>
             <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-            <span>for authentic Indian food lovers</span>
+            <span>{t('for lovers of authentic Indian cuisine', 'voor liefhebbers van authentiek Indiaas eten')}</span>
           </p>
         </div>
       </div>

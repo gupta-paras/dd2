@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { DEFAULT_CONFIG, RestaurantConfig } from '@/lib/config-shared';
 
 interface ConfigContextValue {
@@ -27,7 +27,7 @@ export function ConfigProvider({
   );
   const [isLoading, setIsLoading] = useState(!initialConfig);
 
-  const fetchConfig = async () => {
+  const refreshConfig = useCallback(async () => {
     try {
       const res = await fetch('/api/config');
       if (res.ok) {
@@ -41,10 +41,32 @@ export function ConfigProvider({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchConfig();
+    let ignore = false;
+    async function loadInitial() {
+      try {
+        const res = await fetch('/api/config');
+        if (res.ok) {
+          const json = await res.json();
+          if (!ignore && json.success && json.data) {
+            setConfig(json.data);
+          }
+        }
+      } catch (e) {
+        console.warn('Could not fetch /api/config, falling back to defaults:', e);
+      } finally {
+        if (!ignore) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    loadInitial();
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
@@ -52,7 +74,7 @@ export function ConfigProvider({
       value={{
         config,
         isLoading,
-        refreshConfig: fetchConfig,
+        refreshConfig,
       }}
     >
       {children}
