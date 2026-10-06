@@ -24,7 +24,6 @@ export const metadata: Metadata = {
     'Indian Western Fusion',
     'North Indian Curries',
     'South Indian Food',
-    'Halal Indian Amsterdam',
     'Street Food Amsterdam',
   ],
 };

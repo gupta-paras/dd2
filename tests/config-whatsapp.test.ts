@@ -42,18 +42,16 @@ describe('Config & WhatsApp Order Flow Verification', () => {
     const message = urlObj.searchParams.get('text') || '';
 
     // Verify key fields in WhatsApp message
-    assert.ok(message.includes('DD-9876'), 'Order ID must be in message');
-    assert.ok(message.includes('Sophie van Dijk'), 'Customer name must be in message');
-    assert.ok(message.includes('Self Pickup Only'), 'Order type must be in message');
+    assert.ok(message.includes('Order - Desi Dutch'));
     assert.ok(message.includes('2x Keema Bitterballen - €17.00'));
     assert.ok(message.includes('1x Kapsalon Chicken Tikka - €13.50'));
     assert.ok(message.includes('Total: €30.50'));
-    assert.ok(message.includes('Please keep mild spice, pickup at 18:30'));
+    assert.ok(message.includes('Name: Sophie van Dijk'));
+    assert.ok(message.includes('Notes: Please keep mild spice, pickup at 18:30'));
   });
 
   it('generates valid WhatsApp URL containing Dutch translation when language is nl', () => {
     const payload: WhatsAppOrderPayload = {
-      orderId: 'DD-1234',
       customerName: 'Alex Bakker',
       notes: 'Afhalen rond 19:00',
       items: [{ name: 'Masala Stroopwafel', quantity: 3, price: 4.5 }],
@@ -65,12 +63,11 @@ describe('Config & WhatsApp Order Flow Verification', () => {
     const urlObj = new URL(url);
     const message = urlObj.searchParams.get('text') || '';
 
-    assert.ok(message.includes('NIEUWE BESTELLING'));
-    assert.ok(message.includes('Bestelnummer'));
-    assert.ok(message.includes('Alleen afhalen'));
-    assert.ok(message.includes('Klant: Alex Bakker'));
+    assert.ok(message.includes('Bestelling - Desi Dutch'));
     assert.ok(message.includes('3x Masala Stroopwafel - €13.50'));
-    assert.ok(message.includes('Totaalbedrag: €13.50'));
+    assert.ok(message.includes('Totaal: €13.50'));
+    assert.ok(message.includes('Naam: Alex Bakker'));
+    assert.ok(message.includes('Opmerkingen: Afhalen rond 19:00'));
   });
 
   it('GET /api/config returns live configuration via HTTP', async () => {

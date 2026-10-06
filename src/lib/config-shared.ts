@@ -172,7 +172,7 @@ export const DEFAULT_CONFIG: RestaurantConfig = {
 };
 
 export interface WhatsAppOrderPayload {
-  orderId: string;
+  orderId?: string;
   customerName?: string;
   notes?: string;
   items: Array<{ name: string; quantity: number; price: number }>;
@@ -198,40 +198,21 @@ export function generateWhatsAppOrderUrl(
     .join('\n');
 
   const titleHeader = isNl
-    ? `*✨ NIEUWE BESTELLING - ${config.restaurant.name.toUpperCase()}*`
-    : `*✨ NEW ORDER - ${config.restaurant.name.toUpperCase()}*`;
+    ? `*Bestelling - ${config.restaurant.name}*`
+    : `*Order - ${config.restaurant.name}*`;
 
-  const orderIdLabel = isNl ? 'Bestelnummer' : 'Order ID';
-  const pickupLabel = isNl ? '🛍️ Bestelling: Alleen afhalen' : '🛍️ Order: Self Pickup Only';
-  const pickupNotice = isNl
-    ? '📍 Afhaaltijd en adres worden in WhatsApp bevestigd'
-    : '📍 Pickup time and address confirmed in WhatsApp';
-
-  const customerLabel = isNl ? 'Klant' : 'Customer';
-  const notesLabel = isNl ? 'Opmerkingen / Gewenste afhaaltijd' : 'Preferred collection time / Notes';
-  const totalLabel = isNl ? 'Totaalbedrag' : 'Total';
-  const sentVia = isNl
-    ? `_Verstuurd via ${config.restaurant.name}_`
-    : `_Sent via ${config.restaurant.name} Web Ordering_`;
+  const customerLabel = isNl ? 'Naam' : 'Name';
+  const notesLabel = isNl ? 'Opmerkingen' : 'Notes';
+  const totalLabel = isNl ? 'Totaal' : 'Total';
 
   const messageLines = [
     titleHeader,
-    `*${orderIdLabel}:* ${order.orderId}`,
-    `--------------------------------`,
-    pickupLabel,
-    pickupNotice,
-    order.customerName ? `👤 ${customerLabel}: ${order.customerName}` : null,
-    order.notes ? `📝 ${notesLabel}: ${order.notes}` : null,
-    `--------------------------------`,
-    isNl ? `*Gerechten:*` : `*Items:*`,
     itemsList,
-    `--------------------------------`,
     `*${totalLabel}: €${order.total.toFixed(2)}*`,
-    `--------------------------------`,
-    `🕒 ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
-    sentVia,
+    order.customerName ? `${customerLabel}: ${order.customerName}` : null,
+    order.notes ? `${notesLabel}: ${order.notes}` : null,
   ].filter(Boolean);
 
-  const fullMessage = messageLines.join('\n');
+  const fullMessage = messageLines.join('\n\n');
   return `https://wa.me/${phone}?text=${encodeURIComponent(fullMessage)}`;
 }

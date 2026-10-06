@@ -42,7 +42,6 @@ const PRESET_TAGS = [
   'desserts',
   'vegetarian',
   'spicy',
-  'halal',
   'sweet',
   'comfort-food',
 ];
