@@ -1,69 +1,178 @@
-import Image from "next/image";
+'use client';
 
-export default function Home() {
+import React, { useState, useEffect, useMemo } from 'react';
+import { Dish } from '@/types';
+import { Navbar } from '@/components/Navbar';
+import { HeroSection } from '@/components/HeroSection';
+import { FilterToolbar } from '@/components/FilterToolbar';
+import { DishGrid } from '@/components/DishGrid';
+import { CartDrawer } from '@/components/CartDrawer';
+import { CheckoutModal } from '@/components/CheckoutModal';
+import { Footer } from '@/components/Footer';
+
+export default function HomePage() {
+  const [allDishes, setAllDishes] = useState<Dish[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [activeTag, setActiveTag] = useState('All');
+  const [dailySpecialOnly, setDailySpecialOnly] = useState(false);
+  const [inStockOnly, setInStockOnly] = useState(true);
+
+  // Initial fetch from backend API asynchronously: query availability=true
+  useEffect(() => {
+    let ignore = false;
+    async function loadDishes() {
+      try {
+        const res = await fetch('/api/dishes?availability=true', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch dishes');
+        const data = await res.json();
+        if (!ignore && data && Array.isArray(data.data)) {
+          // Strictly only show available dishes on the landing page
+          const availableOnly = data.data.filter((d: Dish) => d.is_available);
+          setAllDishes(availableOnly);
+        }
+      } catch (err) {
+        console.error('Error loading dishes:', err);
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadDishes();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  // Client-side compound filtering:
+  // Strictly enforce availability for landing page dishes.
+  // daily_special, tags, name are OR condition among themselves when provided.
+  const filteredDishes = useMemo(() => {
+    return allDishes.filter((dish) => {
+      // 1. Availability filter: only available dishes on the landing page
+      if (!dish.is_available) {
+        return false;
+      }
+
+      // 2. OR Filters group: search, tag, dailySpecial
+      const hasSearch = search.trim().length > 0;
+      const hasTag = activeTag !== 'All';
+      const hasSpecial = dailySpecialOnly;
+
+      const hasOrFilters = hasSearch || hasTag || hasSpecial;
+
+      // If no OR filters are selected, pass availability check
+      if (!hasOrFilters) {
+        return true;
+      }
+
+      // If daily_special is true and dish is daily_special
+      if (hasSpecial && dish.daily_special) {
+        return true;
+      }
+
+      // If tag is selected and dish includes tag (case-insensitive)
+      if (hasTag) {
+        const dishTags = dish.tags.map((t) => t.toLowerCase());
+        if (dishTags.includes(activeTag.toLowerCase())) {
+          return true;
+        }
+      }
+
+      // If search query is provided and dish name or description matches
+      if (hasSearch) {
+        const query = search.trim().toLowerCase();
+        if (
+          dish.name.toLowerCase().includes(query) ||
+          dish.description.toLowerCase().includes(query)
+        ) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+  }, [allDishes, search, activeTag, dailySpecialOnly, inStockOnly]);
+
+  const handleResetFilters = () => {
+    setSearch('');
+    setActiveTag('All');
+    setDailySpecialOnly(false);
+    setInStockOnly(true);
+  };
+
+  const handleScrollToMenu = () => {
+    const el = document.getElementById('street-menu');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleSpecialsFilter = () => {
+    setDailySpecialOnly(true);
+    handleScrollToMenu();
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen flex flex-col bg-[#FAF9F6]">
+      <Navbar />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <HeroSection
+          onExploreClick={handleScrollToMenu}
+          onSpecialsClick={handleSpecialsFilter}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+
+        {/* Menu Section */}
+        <section id="street-menu" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100/70 text-orange-950 text-xs font-bold tracking-wide mb-2">
+                Fresh From The Kitchen
+              </div>
+              <h2 className="text-3xl font-black tracking-tight text-stone-900">
+                Amsterdam &times; Delhi Street Menu
+              </h2>
+              <p className="text-sm text-stone-600 mt-1">
+                Handcrafted snacks, loaded kapsalons, and aromatic sweet treats.
+              </p>
+            </div>
+          </div>
+
+          {/* Interactive Filter Toolbar */}
+          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-2xs">
+            <FilterToolbar
+              search={search}
+              onSearchChange={setSearch}
+              activeTag={activeTag}
+              onTagChange={setActiveTag}
+              dailySpecialOnly={dailySpecialOnly}
+              onDailySpecialChange={setDailySpecialOnly}
+              inStockOnly={inStockOnly}
+              onInStockChange={setInStockOnly}
+              onResetFilters={handleResetFilters}
+              totalCount={allDishes.length}
+              filteredCount={filteredDishes.length}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          </div>
+
+          {/* Dish Grid Display */}
+          <DishGrid
+            dishes={filteredDishes}
+            loading={loading}
+            onResetFilters={handleResetFilters}
+          />
+        </section>
       </main>
+
+      {/* Cart Drawer & Checkout Modal */}
+      <CartDrawer />
+      <CheckoutModal />
+
+      <Footer />
     </div>
   );
 }

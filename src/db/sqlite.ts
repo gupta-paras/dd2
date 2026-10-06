@@ -1,0 +1,101 @@
+import { DatabaseSync } from 'node:sqlite';
+import path from 'node:path';
+import fs from 'node:fs';
+import { SEED_DISHES } from './seed-data';
+
+let defaultDbInstance: DatabaseSync | null = null;
+
+export function initSchema(db: DatabaseSync): void {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS dishes (
+      dish_id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL,
+      photo_url TEXT NOT NULL,
+      price REAL NOT NULL,
+      tags TEXT NOT NULL,
+      daily_special INTEGER NOT NULL DEFAULT 0,
+      is_available INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_dishes_name ON dishes(name);
+    CREATE INDEX IF NOT EXISTS idx_dishes_daily_special ON dishes(daily_special);
+    CREATE INDEX IF NOT EXISTS idx_dishes_is_available ON dishes(is_available);
+  `);
+}
+
+export function seedIfEmpty(db: DatabaseSync): number {
+  const countRow = db.prepare('SELECT COUNT(*) as count FROM dishes').get() as { count: number };
+  if (countRow.count === 0) {
+    const insertStmt = db.prepare(`
+      INSERT INTO dishes (
+        dish_id, name, description, photo_url, price, tags, daily_special, is_available, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    for (const dish of SEED_DISHES) {
+      insertStmt.run(
+        dish.dish_id,
+        dish.name,
+        dish.description,
+        dish.photo_url,
+        dish.price,
+        JSON.stringify(dish.tags),
+        dish.daily_special ? 1 : 0,
+        dish.is_available ? 1 : 0,
+        dish.created_at,
+        dish.updated_at
+      );
+    }
+    return SEED_DISHES.length;
+  }
+  return 0;
+}
+
+export function createDatabase(dbPath?: string, options: { autoSeed?: boolean } = { autoSeed: true }): DatabaseSync {
+  const resolvedPath = dbPath || process.env.DATABASE_PATH || path.resolve(process.cwd(), 'data.db');
+  
+  if (resolvedPath !== ':memory:') {
+    const dir = path.dirname(resolvedPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  }
+
+  const db = new DatabaseSync(resolvedPath);
+
+  if (resolvedPath !== ':memory:') {
+    try {
+      db.exec('PRAGMA journal_mode = WAL;');
+    } catch {
+      // WAL may not be supported in some environments, ignore gracefully
+    }
+  }
+  db.exec('PRAGMA synchronous = NORMAL;');
+
+  initSchema(db);
+
+  if (options.autoSeed !== false) {
+    seedIfEmpty(db);
+  }
+
+  return db;
+}
+
+export function getDatabase(customPath?: string): DatabaseSync {
+  if (customPath) {
+    return createDatabase(customPath);
+  }
+  if (!defaultDbInstance) {
+    defaultDbInstance = createDatabase();
+  }
+  return defaultDbInstance;
+}
+
+export function closeDatabase(): void {
+  if (defaultDbInstance) {
+    defaultDbInstance.close();
+    defaultDbInstance = null;
+  }
+}
