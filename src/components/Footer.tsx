@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useConfig } from '@/context/ConfigContext';
 import { useLanguage } from '@/context/LanguageContext';
-import { Heart, Clock, MessageCircle, ShieldCheck, Globe, UtensilsCrossed } from 'lucide-react';
+import { Heart, Clock, ShieldCheck, Globe, UtensilsCrossed } from 'lucide-react';
 
 export function Footer() {
   const { config } = useConfig();
@@ -55,17 +55,6 @@ export function Footer() {
                 <p className="leading-snug">
                   {isNl ? config.ordering_notice.pickup_info_nl : config.ordering_notice.pickup_info}
                 </p>
-              </div>
-              <div className="flex items-center gap-2 pt-1">
-                <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                <a
-                  href={`https://wa.me/${config.restaurant.whatsapp_phone_raw}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:text-emerald-400 transition-colors font-medium text-emerald-400"
-                >
-                  WhatsApp: {config.restaurant.whatsapp_number}
-                </a>
               </div>
             </div>
           </div>
