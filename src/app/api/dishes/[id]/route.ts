@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDishService } from '@/services/dish.service';
 import { dishUpdateSchema } from '@/services/dish.validator';
+import { isAuthorizedAdmin } from '@/lib/auth';
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -41,6 +42,14 @@ export async function PUT(
   { params }: RouteContext
 ) {
   try {
+    const isAuthorized = await isAuthorizedAdmin(request);
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     let body: unknown;
     try {
@@ -89,10 +98,18 @@ export async function PUT(
 }
 
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: RouteContext
 ) {
   try {
+    const isAuthorized = await isAuthorizedAdmin(request);
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required' },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const dishService = getDishService();
     const deleted = await dishService.deleteDish(id);

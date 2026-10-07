@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDishService } from '@/services/dish.service';
 import { dishCreateSchema, dishFilterSchema } from '@/services/dish.validator';
+import { isAuthorizedAdmin } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,6 +37,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const isAuthorized = await isAuthorizedAdmin(request);
+    if (!isAuthorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin authentication required' },
+        { status: 401 }
+      );
+    }
+
     let body: unknown;
     try {
       body = await request.json();

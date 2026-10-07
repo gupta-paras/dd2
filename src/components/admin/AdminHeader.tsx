@@ -50,7 +50,7 @@ export function AdminHeader({ onAddNewDish }: AdminHeaderProps) {
             </div>
           </div>
 
-          {/* Right: Add Dish CTA */}
+          {/* Right: Add Dish CTA & Logout */}
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -59,6 +59,18 @@ export function AdminHeader({ onAddNewDish }: AdminHeaderProps) {
             >
               <Plus className="w-4 h-4" />
               <span>Add New Dish</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={async () => {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/admin/login';
+              }}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-stone-600 hover:text-stone-900 bg-white hover:bg-stone-50 px-3 py-2.5 rounded-xl border border-stone-200 transition-colors shadow-2xs cursor-pointer"
+              title="Sign Out"
+            >
+              <span>Logout</span>
             </button>
           </div>
         </div>
